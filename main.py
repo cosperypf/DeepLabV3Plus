@@ -1,23 +1,3 @@
-"""
-Train:
---jpg_dir ./datasets/data/JPEGImages \
---png_dir ./datasets/data/SegmentationClassAug \
---list_dir ./datasets/data/Segmentation \
---total_itrs 1 \
---num_classes 21 \
---crop_val --crop_size 513 \
---checkpoints ./results/checkpoints \
---save_result_dir ./results/result \
---val_interval 1 --save_val_results \
-
-Prediction:
---use_ckpt ./results/checkpoints/best_deeplabv3plus_mobilenet_os16.pth \
---save_result_dir ./results/predict_result \
---test_only --test_dir ./datasets/data/JPEGImages \
---pretrained_backbone_dir ./models \
---crop_val --crop_size 513 \
-
-"""
 
 from tqdm import tqdm
 import os
@@ -94,8 +74,8 @@ def get_argparser():
     parser.add_argument("--list_dir", type=str, default='',
                         help='train.txt and val.txt folder path')
     parser.add_argument("--checkpoints", type=str, default='./checkpoints',
-                        help='checkpoints dir')
-    parser.add_argument("--save_result_dir", type=str, default='./results',
+                        help='checkpoints save dir. this dir will save checkpoints when training')
+    parser.add_argument("--save_prediction_dir", type=str, default='./results',
                         help='save result dir')
 
     # Test Options
@@ -185,10 +165,10 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None):
     img_id = 0
 
     if opts.save_val_results:
-        if os.path.exists(opts.save_result_dir):
+        if os.path.exists(opts.save_prediction_dir):
             import shutil
-            shutil.rmtree(opts.save_result_dir)
-        os.mkdir(opts.save_result_dir)
+            shutil.rmtree(opts.save_prediction_dir)
+        os.mkdir(opts.save_prediction_dir)
 
 
     with torch.no_grad():
@@ -216,9 +196,9 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None):
                     target = loader.dataset.decode_target(target).astype(np.uint8)
                     pred = loader.dataset.decode_target(pred).astype(np.uint8)
 
-                    Image.fromarray(image).save(os.path.join(opts.save_result_dir, str(img_id)+"_image.png"))
-                    Image.fromarray(target).save(os.path.join(opts.save_result_dir, str(img_id)+"_target.png"))
-                    Image.fromarray(pred).save(os.path.join(opts.save_result_dir, str(img_id)+"_pred.png"))
+                    Image.fromarray(image).save(os.path.join(opts.save_prediction_dir, str(img_id)+"_image.png"))
+                    Image.fromarray(target).save(os.path.join(opts.save_prediction_dir, str(img_id)+"_target.png"))
+                    Image.fromarray(pred).save(os.path.join(opts.save_prediction_dir, str(img_id)+"_pred.png"))
 
                     fig = plt.figure()
                     plt.imshow(image)
@@ -228,7 +208,7 @@ def validate(opts, model, loader, device, metrics, ret_samples_ids=None):
                     ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator())
                     ax.yaxis.set_major_locator(matplotlib.ticker.NullLocator())
 
-                    plt.savefig(os.path.join(opts.save_result_dir, str(img_id) + "_overlay.png"), bbox_inches='tight', pad_inches=0)
+                    plt.savefig(os.path.join(opts.save_prediction_dir, str(img_id) + "_overlay.png"), bbox_inches='tight', pad_inches=0)
                     plt.close()
                     img_id += 1
 
@@ -241,10 +221,10 @@ def test(opts, model, loader, device, metrics=None, ret_samples_ids=None):
     # metrics.reset()
     ret_samples = []
 
-    if os.path.exists(opts.save_result_dir):
+    if os.path.exists(opts.save_prediction_dir):
         import shutil
-        shutil.rmtree(opts.save_result_dir)
-    os.makedirs(opts.save_result_dir)
+        shutil.rmtree(opts.save_prediction_dir)
+    os.makedirs(opts.save_prediction_dir)
 
     denorm = utils.Denormalize(mean=[0.485, 0.456, 0.406],
                                std=[0.229, 0.224, 0.225])
@@ -275,9 +255,9 @@ def test(opts, model, loader, device, metrics=None, ret_samples_ids=None):
                 target = loader.dataset.decode_target(target).astype(np.uint8)
                 pred = loader.dataset.decode_target(pred).astype(np.uint8)
 
-                Image.fromarray(image).save(os.path.join(opts.save_result_dir, str(img_id) + "_image.png"))
-                Image.fromarray(target).save(os.path.join(opts.save_result_dir, str(img_id) + "_target.png"))
-                Image.fromarray(pred).save(os.path.join(opts.save_result_dir, str(img_id) + "_pred.png"))
+                Image.fromarray(image).save(os.path.join(opts.save_prediction_dir, str(img_id) + "_image.png"))
+                Image.fromarray(target).save(os.path.join(opts.save_prediction_dir, str(img_id) + "_target.png"))
+                Image.fromarray(pred).save(os.path.join(opts.save_prediction_dir, str(img_id) + "_pred.png"))
 
                 fig = plt.figure()
                 plt.imshow(image)
@@ -287,7 +267,7 @@ def test(opts, model, loader, device, metrics=None, ret_samples_ids=None):
                 ax.xaxis.set_major_locator(matplotlib.ticker.NullLocator())
                 ax.yaxis.set_major_locator(matplotlib.ticker.NullLocator())
 
-                plt.savefig(os.path.join(opts.save_result_dir, str(img_id) + "_overlay.png"), bbox_inches='tight',
+                plt.savefig(os.path.join(opts.save_prediction_dir, str(img_id) + "_overlay.png"), bbox_inches='tight',
                             pad_inches=0)
                 plt.close()
                 img_id += 1
