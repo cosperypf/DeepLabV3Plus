@@ -8,7 +8,7 @@ and thanks VainF
 
 ### Changes
 
-VainF did more work in this, bug when I want to train with my one dataset, I found a lot of problem, such as: I can't specify a given path for my dataset and pretrained model; I can't train directly with gray pictures because the original code is deeply bound with the VOC data set structure; and so on.
+VainF did more work in this, but when I want to train with my one dataset, I found a lot of problem, such as: I can't specify a given path for my dataset and pretrained model; I can't train directly with gray pictures because the original code is deeply bound with the VOC data set structure; and so on.
 
 So I make some changes, such as:
 1. No longer rely on separate data sets (such as VOC). Add some parameters instead
